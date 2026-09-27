@@ -1,9 +1,9 @@
-"""Offline throughput: minfer vs Hugging Face `generate`.
+"""Offline throughput: this engine vs Hugging Face `generate`.
 
 Both systems get the same requests and the same concurrency limit N:
   * HF: static batches of N requests (left-padded), each batch runs until its longest
     request is done (max_new_tokens = longest in batch; shorter ones are padding work).
-  * minfer: continuous batching with max_num_seqs = N, paged KV, chunked prefill.
+  * engine: continuous batching with max_num_seqs = N, paged KV, chunked prefill.
 Throughput = requested output tokens / wall-clock seconds (only useful tokens count).
 EOS is ignored on both sides so every request produces exactly its target length.
 
@@ -14,7 +14,7 @@ Workloads
 
 Usage
   python benchmarks/bench_throughput.py                 # full sweep, writes results/throughput.json
-  python benchmarks/bench_throughput.py --system minfer --batch 32 --workload mixed
+  python benchmarks/bench_throughput.py --system engine --batch 32 --workload mixed
 """
 import argparse
 import json
@@ -69,9 +69,9 @@ def run_hf(reqs, batch: int) -> dict:
     return {"seconds": time.perf_counter() - t0, "peak_mem_gib": torch.cuda.max_memory_allocated() / 2**30}
 
 
-def run_minfer(reqs, batch: int, **overrides) -> dict:
-    from minfer import LLMEngine, SamplingParams
-    from minfer.config import EngineConfig
+def run_engine(reqs, batch: int, **overrides) -> dict:
+    from inference_engine import LLMEngine, SamplingParams
+    from inference_engine.config import EngineConfig
     cfg = EngineConfig(max_num_seqs=batch, **overrides)
     eng = LLMEngine(MODEL, cfg, load_tokenizer=False, verbose=False)
     eng.generate([ids for ids, _ in reqs[:4]], SamplingParams(max_tokens=16, ignore_eos=True), decode_text=False)
@@ -98,7 +98,7 @@ def single(args):
         r = run_hf(reqs, args.batch)
     else:
         overrides = json.loads(args.overrides) if args.overrides else {}
-        r = run_minfer(reqs, args.batch, **overrides)
+        r = run_engine(reqs, args.batch, **overrides)
     r.update(system=args.system, batch=args.batch, workload=args.workload, num_requests=len(reqs),
              output_tokens=out_tokens, prompt_tokens=in_tokens,
              output_tok_per_s=out_tokens / r["seconds"], total_tok_per_s=(out_tokens + in_tokens) / r["seconds"])
@@ -123,16 +123,16 @@ def sweep(args):
     for workload in ("mixed", "fixed"):
         for batch in args.batches:
             hf = sub("hf", batch, workload, args.num_requests)
-            mi = sub("minfer", batch, workload, args.num_requests)
+            mi = sub("engine", batch, workload, args.num_requests)
             results += [hf, mi]
             print(f"{workload:5s} bs={batch:3d}  HF {hf['output_tok_per_s']:8.1f} tok/s ({hf['seconds']:6.1f}s)   "
-                  f"minfer {mi['output_tok_per_s']:8.1f} tok/s ({mi['seconds']:6.1f}s)   "
+                  f"engine {mi['output_tok_per_s']:8.1f} tok/s ({mi['seconds']:6.1f}s)   "
                   f"speedup {mi['output_tok_per_s'] / hf['output_tok_per_s']:.2f}x", flush=True)
-    # minfer with no concurrency cap (scheduler limited only by KV-cache capacity)
+    # engine with no concurrency cap (scheduler limited only by KV-cache capacity)
     for workload in ("mixed", "fixed"):
-        mi = sub("minfer", 256, workload, args.num_requests)
+        mi = sub("engine", 256, workload, args.num_requests)
         results.append(mi)
-        print(f"{workload:5s} minfer uncapped (max_num_seqs=256): {mi['output_tok_per_s']:.1f} tok/s", flush=True)
+        print(f"{workload:5s} engine uncapped (max_num_seqs=256): {mi['output_tok_per_s']:.1f} tok/s", flush=True)
     os.makedirs(os.path.join(ROOT, "results"), exist_ok=True)
     with open(os.path.join(ROOT, "results", "throughput.json"), "w") as f:
         json.dump({"gpu": torch.cuda.get_device_name(0), "model": MODEL, "results": results}, f, indent=1)
@@ -140,11 +140,11 @@ def sweep(args):
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--system", choices=["hf", "minfer"])
+    ap.add_argument("--system", choices=["hf", "engine"])
     ap.add_argument("--batch", type=int, default=32)
     ap.add_argument("--workload", choices=["mixed", "fixed"], default="mixed")
     ap.add_argument("--num-requests", type=int, default=256)
-    ap.add_argument("--overrides", default=None, help="JSON EngineConfig overrides for minfer")
+    ap.add_argument("--overrides", default=None, help="JSON EngineConfig overrides for the engine")
     ap.add_argument("--batches", type=int, nargs="+", default=[8, 16, 32, 64])
     args = ap.parse_args()
     single(args) if args.system else sweep(args)

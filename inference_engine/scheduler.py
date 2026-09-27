@@ -14,9 +14,9 @@ preempted: its pages are freed and it is re-queued to be recomputed later.
 """
 from collections import deque
 
-from minfer.block_manager import BlockAllocator
-from minfer.config import EngineConfig
-from minfer.sequence import Sequence, Status
+from inference_engine.block_manager import BlockAllocator
+from inference_engine.config import EngineConfig
+from inference_engine.sequence import Sequence, Status
 
 
 class Scheduler:

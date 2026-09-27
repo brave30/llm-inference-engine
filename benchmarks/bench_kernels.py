@@ -17,8 +17,8 @@ import triton
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.join(ROOT, "tests"))
-from minfer.kernels.decode_attention import paged_decode_attention, paged_decode_attention_torch
-from minfer.kernels.rmsnorm import add_rmsnorm_torch, fused_add_rmsnorm
+from inference_engine.kernels.decode_attention import paged_decode_attention, paged_decode_attention_torch
+from inference_engine.kernels.rmsnorm import add_rmsnorm_torch, fused_add_rmsnorm
 from test_kernels import _make_paged
 
 

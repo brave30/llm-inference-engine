@@ -7,8 +7,8 @@ import sys
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from minfer.kernels.decode_attention import paged_decode_attention, paged_decode_attention_torch
-from minfer.kernels.rmsnorm import add_rmsnorm_torch, fused_add_rmsnorm
+from inference_engine.kernels.decode_attention import paged_decode_attention, paged_decode_attention_torch
+from inference_engine.kernels.rmsnorm import add_rmsnorm_torch, fused_add_rmsnorm
 
 
 def test_rmsnorm():

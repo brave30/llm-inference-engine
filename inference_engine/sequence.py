@@ -2,7 +2,7 @@ import enum
 import itertools
 import time
 
-from minfer.sampling import SamplingParams
+from inference_engine.sampling import SamplingParams
 
 _ids = itertools.count()
 

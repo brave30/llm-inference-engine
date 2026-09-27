@@ -15,8 +15,8 @@ import torch
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
-from minfer import LLMEngine, SamplingParams
-from minfer.config import EngineConfig
+from inference_engine import LLMEngine, SamplingParams
+from inference_engine.config import EngineConfig
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--graphs", type=int, default=1)

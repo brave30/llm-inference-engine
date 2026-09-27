@@ -18,8 +18,8 @@ import torch
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
-from minfer import LLMEngine, SamplingParams
-from minfer.config import EngineConfig
+from inference_engine import LLMEngine, SamplingParams
+from inference_engine.config import EngineConfig
 
 MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 

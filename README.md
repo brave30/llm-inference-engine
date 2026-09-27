@@ -1,4 +1,4 @@
-# minfer: a mini LLM inference engine from scratch
+# LLM Inference Engine
 
 A from-scratch LLM inference engine in PyTorch + Triton: paged KV cache, continuous-batching
 scheduler with chunked prefill, custom Triton kernels (fused add+RMSNorm, paged split-K decode
@@ -16,16 +16,16 @@ Raw results are in `results/`.
 sequences. 256 requests, output tok/s counting only requested tokens, EOS ignored on both sides
 (`benchmarks/bench_throughput.py`):
 
-| Concurrency N | Mixed lengths¹: HF | Mixed: minfer | **Speedup** | Fixed lengths²: HF | Fixed: minfer | **Speedup** |
+| Concurrency N | Mixed lengths¹: HF | Mixed: this engine | **Speedup** | Fixed lengths²: HF | Fixed: this engine | **Speedup** |
 |---|---|---|---|---|---|---|
 | 8  | 122.1 | 715.6  | **5.86x** | 236.7 | 931.9  | **3.94x** |
 | 16 | 174.9 | 1230.2 | **7.04x** | 386.5 | 1668.6 | **4.32x** |
 | 32 | 281.6 | 2034.6 | **7.22x** | 479.0 | 2614.6 | **5.46x** |
 | 64 | 306.7 | 2602.3 | **8.48x** | 527.1 | 3190.9 | **6.05x** |
-| minfer uncapped (256) | | 4446.5 | 14.5x vs HF's best | | 5460.3 | 10.4x vs HF's best |
+| This engine, uncapped (256) | | 4446.5 | 14.5x vs HF's best | | 5460.3 | 10.4x vs HF's best |
 
 ¹ prompt ~ U[128, 512], output ~ U[64, 512]. HF runs static batches of N that wait for their longest
-member; minfer refills freed slots every step. ² every request is 256 prompt + 256 output tokens, so
+member; this engine refills freed slots every step. ² every request is 256 prompt + 256 output tokens, so
 HF wastes nothing on padding. This isolates engine efficiency (paged KV, fused kernels, CUDA graphs)
 from the continuous-batching win. No preemptions occurred in any run; peak GPU memory was 5.6 GB.
 
@@ -48,7 +48,7 @@ with 5 launch calls per step: same kernel time (10.18 ms), step time **12.55 ms 
 
 ## Architecture
 
-![minfer architecture: tests/ and benchmarks/ call engine.py, which drives scheduler.py and block_manager.py, runs model.py over the Triton kernels in minfer/kernels/, and uses weights.py and sampling.py](docs/architecture.png)
+![Architecture: tests/ and benchmarks/ call engine.py, which drives scheduler.py and block_manager.py, runs model.py over the Triton kernels in inference_engine/kernels/, and uses weights.py and sampling.py](docs/architecture.png)
 
 Each engine step, `engine.py` asks the scheduler what to run, the scheduler reserves KV pages from
 the block manager, `model.py` runs one forward pass that calls the Triton kernels, and `sampling.py`
@@ -58,7 +58,7 @@ generated with [Archify](https://github.com/tt-a1i/archify) from
 [`docs/architecture.archify.json`](docs/architecture.archify.json).
 
 ```
-minfer/
+inference_engine/
   engine.py          LLMEngine: step loop, metadata prep, CUDA-graph capture/replay, sampling
   scheduler.py       continuous batching + chunked prefill + preemption (recompute)
   block_manager.py   paged KV allocator (16-token pages, free list, per-sequence block tables)
@@ -106,7 +106,7 @@ prefill steps run eagerly.
 * `tests/test_correctness.py`: greedy generation vs HF `generate` on 12 prompts, under 4 engine
   configs: default, 48-token chunked prefill, all-PyTorch, and a tiny KV cache that forces
   preemption. 77 to 86% of generated tokens are identical to HF. For every sequence that diverges, the
-  test runs HF on the shared prefix and checks that minfer's token is within 2 bf16 ULPs of HF's top
+  test runs HF on the shared prefix and checks that the engine's token is within 2 bf16 ULPs of HF's top
   logit. Every divergence is an exact or 1-ULP tie (measured logit gaps of 0.0 and 0.0625), i.e.
   bf16 reduction-order noise, not an engine bug.
 
@@ -132,7 +132,7 @@ python benchmarks/nsys_summary.py
 ```
 
 ```python
-from minfer import LLMEngine, SamplingParams
+from inference_engine import LLMEngine, SamplingParams
 llm = LLMEngine("TinyLlama/TinyLlama-1.1B-Chat-v1.0")
 print(llm.generate(["The capital of France is"], SamplingParams(max_tokens=32))[0].text)
 ```
@@ -142,7 +142,7 @@ print(llm.generate(["The capital of France is"], SamplingParams(max_tokens=32))[
 * **Baselines are made strong on purpose.** The eager decode-attention baseline uses one flat
   `index_select` gather plus GQA-grouped matmuls. A naive einsum/`repeat_interleave` version was
   15 to 85x slower than Triton and would have inflated the speedup. SDPA with `enable_gqa=True` was
-  7 to 23x slower than expanding heads on this setup, so neither minfer's prefill nor the eager
+  7 to 23x slower than expanding heads on this setup, so neither the engine's prefill nor the eager
   baseline uses it.
 * The RMSNorm speedup is vs eager PyTorch. `torch.compile` generates an equally fast fused
   kernel (within ~15% either way), so the win is fusion itself, not something Inductor can't do.

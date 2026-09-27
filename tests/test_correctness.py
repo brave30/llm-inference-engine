@@ -1,13 +1,13 @@
-"""End-to-end check: minfer greedy decoding reproduces Hugging Face greedy decoding.
+"""End-to-end check: the engine's greedy decoding reproduces Hugging Face greedy decoding.
 
-Runs minfer under several configs (Triton kernels + CUDA graphs, tiny chunk budget that
+Runs the engine under several configs (Triton kernels + CUDA graphs, tiny chunk budget that
 forces multi-chunk prefill, pure-PyTorch paths, and a KV cache small enough to force
 preemption) and compares generated token ids with HF `generate(do_sample=False)`.
 
 Different (equally valid) bf16 reduction orders can flip an argmax between two logits
 that are tied to within bf16 precision, after which greedy continuations legitimately
 differ. So for every sequence that diverges, we run HF on the shared prefix and require
-that the token minfer picked is within 2 bf16 ULPs of HF's top logit (a tie), i.e. that
+that the token the engine picked is within 2 bf16 ULPs of HF's top logit (a tie), i.e. that
 no divergence is caused by a real bug.
 Run: python tests/test_correctness.py
 """
@@ -18,8 +18,8 @@ import sys
 import torch
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from minfer import LLMEngine, SamplingParams
-from minfer.config import EngineConfig
+from inference_engine import LLMEngine, SamplingParams
+from inference_engine.config import EngineConfig
 
 MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 MAX_NEW = 64

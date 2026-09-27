@@ -11,9 +11,9 @@ from dataclasses import dataclass, field
 import torch
 import torch.nn.functional as F
 
-from minfer.config import ModelConfig
-from minfer.kernels.decode_attention import paged_decode_attention, paged_decode_attention_torch
-from minfer.kernels.rmsnorm import add_rmsnorm_torch, fused_add_rmsnorm
+from inference_engine.config import ModelConfig
+from inference_engine.kernels.decode_attention import paged_decode_attention, paged_decode_attention_torch
+from inference_engine.kernels.rmsnorm import add_rmsnorm_torch, fused_add_rmsnorm
 
 
 @dataclass

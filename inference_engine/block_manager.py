@@ -8,7 +8,7 @@ by at most block_size - 1 wasted slots per sequence.
 """
 from collections import deque
 
-from minfer.sequence import Sequence
+from inference_engine.sequence import Sequence
 
 
 class BlockAllocator:

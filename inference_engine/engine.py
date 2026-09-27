@@ -4,14 +4,14 @@ from dataclasses import dataclass
 import torch
 import torch.cuda.nvtx as nvtx
 
-from minfer.block_manager import BlockAllocator
-from minfer.config import EngineConfig, ModelConfig
-from minfer.kernels.decode_attention import choose_num_splits
-from minfer.model import AttentionMetadata, KVCache, LlamaModel, PrefillChunk
-from minfer.sampling import SamplingParams, sample
-from minfer.scheduler import Scheduler
-from minfer.sequence import Sequence
-from minfer.weights import load_state_dict, resolve_model_path
+from inference_engine.block_manager import BlockAllocator
+from inference_engine.config import EngineConfig, ModelConfig
+from inference_engine.kernels.decode_attention import choose_num_splits
+from inference_engine.model import AttentionMetadata, KVCache, LlamaModel, PrefillChunk
+from inference_engine.sampling import SamplingParams, sample
+from inference_engine.scheduler import Scheduler
+from inference_engine.sequence import Sequence
+from inference_engine.weights import load_state_dict, resolve_model_path
 
 
 @dataclass
@@ -57,7 +57,7 @@ class LLMEngine:
         self.scheduler = Scheduler(self.cfg, self.allocator)
         self.max_blocks_per_seq = -(-self.cfg.max_model_len // self.cfg.block_size)
         if verbose:
-            print(f"[minfer] KV cache: {num_blocks} blocks x {self.cfg.block_size} tokens "
+            print(f"[inference_engine] KV cache: {num_blocks} blocks x {self.cfg.block_size} tokens "
                   f"= {num_blocks * self.cfg.block_size} tokens ({num_blocks * per_block / 2**30:.2f} GiB)")
 
         self.tokenizer = None
@@ -101,7 +101,7 @@ class LLMEngine:
         torch.cuda.synchronize()
         self.graph_sizes = sizes
         if self.verbose:
-            print(f"[minfer] captured {len(sizes)} decode CUDA graphs (bs<={max_bs}) in {time.perf_counter() - t0:.1f}s")
+            print(f"[inference_engine] captured {len(sizes)} decode CUDA graphs (bs<={max_bs}) in {time.perf_counter() - t0:.1f}s")
 
     def _run_graph(self, input_ids, positions, slots, block_tables, context_lens) -> torch.Tensor:
         B = input_ids.shape[0]
