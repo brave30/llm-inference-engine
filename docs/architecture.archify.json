@@ -2,7 +2,7 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "minfer Folder Structure",
+    "title": "LLM Inference Engine: Folder Structure",
     "locale": "en",
     "quality_profile": "showcase",
     "viewBox": [
@@ -10,10 +10,10 @@
       660
     ],
     "repository": {
-      "url": "https://github.com/brave30/mini-inference-engine",
+      "url": "https://github.com/brave30/llm-inference-engine",
       "provider": "github",
       "link_mode": "web",
-      "revision": "2699a74603bfbca79dcac2a49cd511edfb2e2324"
+      "revision": "52b045b519145d4f3d311f79667fdf0db043d88f"
     }
   },
   "components": [
@@ -104,7 +104,7 @@
       ],
       "sources": [
         {
-          "path": "minfer/engine.py",
+          "path": "inference_engine/engine.py",
           "line": 35,
           "label": "class LLMEngine"
         }
@@ -125,12 +125,12 @@
       ],
       "sources": [
         {
-          "path": "minfer/scheduler.py",
+          "path": "inference_engine/scheduler.py",
           "line": 22,
           "label": "class Scheduler"
         },
         {
-          "path": "minfer/sequence.py",
+          "path": "inference_engine/sequence.py",
           "label": "request state"
         }
       ]
@@ -150,7 +150,7 @@
       ],
       "sources": [
         {
-          "path": "minfer/block_manager.py",
+          "path": "inference_engine/block_manager.py",
           "line": 14,
           "label": "class BlockAllocator"
         }
@@ -171,7 +171,7 @@
       ],
       "sources": [
         {
-          "path": "minfer/model.py",
+          "path": "inference_engine/model.py",
           "line": 83,
           "label": "class LlamaModel"
         }
@@ -192,7 +192,7 @@
       ],
       "sources": [
         {
-          "path": "minfer/kernels/decode_attention.py",
+          "path": "inference_engine/kernels/decode_attention.py",
           "line": 128,
           "label": "paged_decode_attention"
         }
@@ -213,7 +213,7 @@
       ],
       "sources": [
         {
-          "path": "minfer/kernels/rmsnorm.py",
+          "path": "inference_engine/kernels/rmsnorm.py",
           "line": 35,
           "label": "fused_add_rmsnorm"
         }
@@ -234,12 +234,12 @@
       ],
       "sources": [
         {
-          "path": "minfer/weights.py",
+          "path": "inference_engine/weights.py",
           "line": 15,
           "label": "load_state_dict"
         },
         {
-          "path": "minfer/config.py",
+          "path": "inference_engine/config.py",
           "label": "ModelConfig"
         }
       ]
@@ -259,7 +259,7 @@
       ],
       "sources": [
         {
-          "path": "minfer/sampling.py",
+          "path": "inference_engine/sampling.py",
           "line": 13,
           "label": "sample"
         }
@@ -269,7 +269,7 @@
   "boundaries": [
     {
       "kind": "region",
-      "label": "minfer/  (the engine package)",
+      "label": "inference_engine/  (the engine package)",
       "wraps": [
         "engine",
         "scheduler",
@@ -283,7 +283,7 @@
     },
     {
       "kind": "region",
-      "label": "minfer/kernels/",
+      "label": "inference_engine/kernels/",
       "wraps": [
         "attn",
         "rmsnorm"
