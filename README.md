@@ -48,6 +48,15 @@ with 5 launch calls per step: same kernel time (10.18 ms), step time **12.55 ms 
 
 ## Architecture
 
+![minfer architecture: tests/ and benchmarks/ call engine.py, which drives scheduler.py and block_manager.py, runs model.py over the Triton kernels in minfer/kernels/, and uses weights.py and sampling.py](docs/architecture.png)
+
+Each engine step, `engine.py` asks the scheduler what to run, the scheduler reserves KV pages from
+the block manager, `model.py` runs one forward pass that calls the Triton kernels, and `sampling.py`
+picks the next tokens. An interactive version, where every box links to its source file, is in
+[`docs/architecture.html`](docs/architecture.html) (download it and open it in a browser). It was
+generated with [Archify](https://github.com/tt-a1i/archify) from
+[`docs/architecture.archify.json`](docs/architecture.archify.json).
+
 ```
 minfer/
   engine.py          LLMEngine: step loop, metadata prep, CUDA-graph capture/replay, sampling

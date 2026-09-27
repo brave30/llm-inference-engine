@@ -1,0 +1,395 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "minfer Folder Structure",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "viewBox": [
+      1200,
+      660
+    ],
+    "repository": {
+      "url": "https://github.com/brave30/mini-inference-engine",
+      "provider": "github",
+      "link_mode": "web",
+      "revision": "2699a74603bfbca79dcac2a49cd511edfb2e2324"
+    }
+  },
+  "components": [
+    {
+      "id": "tests",
+      "type": "frontend",
+      "label": "tests/",
+      "sublabel": "correctness vs HF",
+      "pos": [
+        50,
+        170
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "sources": [
+        {
+          "path": "tests/test_correctness.py",
+          "label": "HF token match"
+        },
+        {
+          "path": "tests/test_kernels.py",
+          "label": "kernel tests"
+        }
+      ]
+    },
+    {
+      "id": "benchmarks",
+      "type": "frontend",
+      "label": "benchmarks/",
+      "sublabel": "throughput · latency · nsys",
+      "pos": [
+        50,
+        350
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "sources": [
+        {
+          "path": "benchmarks/bench_throughput.py",
+          "label": "vs HF generate"
+        },
+        {
+          "path": "benchmarks/bench_latency.py",
+          "label": "decode latency"
+        },
+        {
+          "path": "benchmarks/bench_kernels.py",
+          "label": "kernel speedups"
+        }
+      ]
+    },
+    {
+      "id": "results",
+      "type": "database",
+      "label": "results/",
+      "sublabel": "JSON + Nsight reports",
+      "pos": [
+        50,
+        530
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "sources": [
+        {
+          "path": "results/throughput.json"
+        }
+      ]
+    },
+    {
+      "id": "engine",
+      "type": "backend",
+      "label": "engine.py",
+      "sublabel": "LLMEngine: step loop",
+      "tag": "start here",
+      "pos": [
+        470,
+        260
+      ],
+      "size": [
+        180,
+        70
+      ],
+      "sources": [
+        {
+          "path": "minfer/engine.py",
+          "line": 35,
+          "label": "class LLMEngine"
+        }
+      ]
+    },
+    {
+      "id": "scheduler",
+      "type": "backend",
+      "label": "scheduler.py",
+      "sublabel": "continuous batching",
+      "pos": [
+        480,
+        80
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "sources": [
+        {
+          "path": "minfer/scheduler.py",
+          "line": 22,
+          "label": "class Scheduler"
+        },
+        {
+          "path": "minfer/sequence.py",
+          "label": "request state"
+        }
+      ]
+    },
+    {
+      "id": "blocks",
+      "type": "backend",
+      "label": "block_manager.py",
+      "sublabel": "paged KV allocator",
+      "pos": [
+        740,
+        80
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "minfer/block_manager.py",
+          "line": 14,
+          "label": "class BlockAllocator"
+        }
+      ]
+    },
+    {
+      "id": "model",
+      "type": "backend",
+      "label": "model.py",
+      "sublabel": "Llama forward + KV cache",
+      "pos": [
+        740,
+        263
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "minfer/model.py",
+          "line": 83,
+          "label": "class LlamaModel"
+        }
+      ]
+    },
+    {
+      "id": "attn",
+      "type": "backend",
+      "label": "decode_attention.py",
+      "sublabel": "Triton paged attention",
+      "pos": [
+        990,
+        190
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "minfer/kernels/decode_attention.py",
+          "line": 128,
+          "label": "paged_decode_attention"
+        }
+      ]
+    },
+    {
+      "id": "rmsnorm",
+      "type": "backend",
+      "label": "rmsnorm.py",
+      "sublabel": "Triton fused RMSNorm",
+      "pos": [
+        990,
+        340
+      ],
+      "size": [
+        170,
+        64
+      ],
+      "sources": [
+        {
+          "path": "minfer/kernels/rmsnorm.py",
+          "line": 35,
+          "label": "fused_add_rmsnorm"
+        }
+      ]
+    },
+    {
+      "id": "weights",
+      "type": "backend",
+      "label": "weights.py + config.py",
+      "sublabel": "load safetensors",
+      "pos": [
+        330,
+        450
+      ],
+      "size": [
+        190,
+        64
+      ],
+      "sources": [
+        {
+          "path": "minfer/weights.py",
+          "line": 15,
+          "label": "load_state_dict"
+        },
+        {
+          "path": "minfer/config.py",
+          "label": "ModelConfig"
+        }
+      ]
+    },
+    {
+      "id": "sampling",
+      "type": "backend",
+      "label": "sampling.py",
+      "sublabel": "pick next token",
+      "pos": [
+        600,
+        450
+      ],
+      "size": [
+        160,
+        64
+      ],
+      "sources": [
+        {
+          "path": "minfer/sampling.py",
+          "line": 13,
+          "label": "sample"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "minfer/  (the engine package)",
+      "wraps": [
+        "engine",
+        "scheduler",
+        "blocks",
+        "model",
+        "attn",
+        "rmsnorm",
+        "weights",
+        "sampling"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "minfer/kernels/",
+      "wraps": [
+        "attn",
+        "rmsnorm"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "bench-calls-engine",
+      "from": "benchmarks",
+      "to": "engine",
+      "label": "generate()",
+      "variant": "emphasis"
+    },
+    {
+      "id": "tests-call-engine",
+      "from": "tests",
+      "to": "engine",
+      "label": "generate()"
+    },
+    {
+      "id": "bench-writes-results",
+      "from": "benchmarks",
+      "to": "results",
+      "label": "writes",
+      "variant": "dashed",
+      "labelAt": [
+        130,
+        472
+      ]
+    },
+    {
+      "id": "engine-schedules",
+      "from": "engine",
+      "to": "scheduler",
+      "label": "schedule()"
+    },
+    {
+      "id": "scheduler-reserves",
+      "from": "scheduler",
+      "to": "blocks",
+      "label": "reserve pages"
+    },
+    {
+      "id": "engine-forward",
+      "from": "engine",
+      "to": "model",
+      "label": "forward()",
+      "variant": "emphasis"
+    },
+    {
+      "id": "model-attention",
+      "from": "model",
+      "to": "attn",
+      "label": "decode",
+      "variant": "emphasis"
+    },
+    {
+      "id": "model-norm",
+      "from": "model",
+      "to": "rmsnorm",
+      "label": "per layer"
+    },
+    {
+      "id": "engine-loads",
+      "from": "engine",
+      "to": "weights",
+      "label": "load",
+      "fromSide": "bottom",
+      "toSide": "top"
+    },
+    {
+      "id": "engine-samples",
+      "from": "engine",
+      "to": "sampling",
+      "label": "sample()",
+      "fromSide": "bottom",
+      "toSide": "top"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "emerald",
+      "title": "Read In This Order",
+      "items": [
+        "engine.py: one step = schedule, forward, sample",
+        "scheduler.py + block_manager.py: who runs, where KV lives",
+        "model.py, then kernels/: the actual GPU math"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "One Engine Step",
+      "items": [
+        "Scheduler picks decodes + prefill chunks under a token budget",
+        "Model runs them in one forward over the paged KV cache",
+        "Pure-decode steps replay a captured CUDA graph"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Around The Engine",
+      "items": [
+        "tests/ and bench_kernels.py also import kernels/ directly",
+        "Every number in README.md comes from results/"
+      ]
+    }
+  ]
+}
